@@ -2,6 +2,7 @@
 .vscode
 pipex
 obj
+outfile
 
 # Prerequisites
 *.d

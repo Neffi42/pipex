@@ -6,20 +6,29 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/25 18:41:08 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/25 20:14:50 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static int	open_io(const char *infile, const char *outfile, int *fd)
+static int	open_io(const char *infile, const char *outfile, int *io)
 {
-	fd[0] = open(infile, O_RDONLY);
-	if (fd[0] == -1)
+	io[0] = open(infile, O_RDONLY);
+	if (io[0] == -1)
 		error_errno();
-	fd[1] = open(outfile, O_WRONLY);
-	if (fd[1] == -1 && close(fd[0]))
+	io[1] = open(outfile, O_WRONLY);
+	if (io[1] == -1 && close(io[0]))
 		error_errno();
+	io[3] = dup(STDIN_FILENO);
+	if (io[3] == -1 && double_close(io))
+		error_errno();
+	io[4] = dup(STDOUT_FILENO);
+	if (io[4] == -1 && double_close(io))
+	{
+		close(io[3]);
+		error_errno();
+	}
 	return (0);
 }
 
@@ -30,12 +39,27 @@ static	int	double_close(int *fd)
 	return (1);
 }
 
+static int	execute(char *s, char **envp)
+{
+	char	**cmd;
+	int		status;
+
+	cmd = ft_split(s, ' ');
+	if (!cmd)
+		error_status(2, ERROR_MALLOC);
+	cmd[0] = ft_freejoin("usr/bin/", cmd[0], 1);
+	if (!cmd[0] && !ft_free_tab(cmd))
+		error_status(2, ERROR_MALLOC);
+	status = execve(cmd[0], cmd, envp);
+	if (status == -1 && ft_free_tab(cmd))
+		exit(status);
+}
+
 int	main(int ac, const char **av, char **envp)
 {
 	int		wstatus;
-	int		io[2];
+	int		io[4];
 	int		fd[2];
-	char	**cmd;
 	pid_t	pid;
 
 	if (ac < 4)
@@ -48,17 +72,9 @@ int	main(int ac, const char **av, char **envp)
 		error_errno();
 	if (!pid)
 	{
-		double_close(fd);
-		cmd = ft_split(av[2], ' ');
-		if (!cmd)
-			error_status(2, ERROR_MALLOC);
-		cmd[0] = ft_freejoin("usr/bin/", cmd[0], 1);
-		if (!cmd[0] && !ft_free_tab(cmd))
-			error_status(2, ERROR_MALLOC);
-		ft_dprintf(1, "%s\n", cmd[0]);
-		wstatus = execve(cmd[0], cmd, envp);
-		if (wstatus == -1 && ft_free_tab(cmd))
-			exit(wstatus);
+		// dup thingy
+		dup2(STDOUT_FILENO, io[1]);
+		execute(av[2], envp);
 	}
 	else
 	{
