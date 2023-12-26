@@ -16,7 +16,6 @@ BWHITE    = \033[1;37m
 LIB_DIR = lib
 SRC_DIR = src
 INC_DIR = include
-BONUS_DIR = bonus
 OBJ_DIR = obj
 LIBFT_DIR = lib/libft
 LIBMLX_DIR = lib/minilibx
@@ -48,21 +47,7 @@ define SRC :=
 endef
 SRC := $(strip $(SRC))
 
-define BONUS_SRC :=
-	check_wstatus.c
-	close_and_free.c
-	close_pipes.c
-	errors.c
-	exec_child.c
-	init_controls.c
-	init_fd.c
-	redirect_fd.c
-	$(addprefix $(BONUS_DIR)/, $(addsuffix _bonus.c, main))
-endef
-BONUS_SRC := $(strip $(BONUS_SRC))
-
 OBJ := $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRC))
-BONUS_OBJ := $(patsubst %.c,$(OBJ_DIR)/%.o,$(BONUS_SRC))
 
 # Utils
 CC = cc
@@ -81,7 +66,7 @@ $(NAME): $(LIBFT) $(OBJ)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "$(CYAN)- Compiling$(DEFAULT) $<"
-	@mkdir -p $(OBJ_DIR)/$(BONUS_DIR)
+	@mkdir -p $(OBJ_DIR)
 	@$(CC) $(CFLAGS) $(INCLUDE_FLAGS) -c $< -o $@
 
 .PHONY: clean
@@ -117,19 +102,9 @@ fcleanlib:
 .PHONY: relib
 relib: fcleanlib $(LIBFT)
 
-.PHONY: bonus
-bonus: $(LIBFT) $(BONUS_OBJ)
-	@echo "$(GREEN)* Assembling $(BWHITE)$@$(DEFAULT)"
-	@$(CC) $(CFLAGS) $(BONUS_OBJ) $(LIB) -o $(NAME)
-
 .PHONY: norm
 norm:
 	@echo "$(YELLOW)$(WD) ./$(LIBFT_DIR)$(DEFAULT)"
 	@make -C $(LIBFT_DIR) norm $(LIB_FLAGS)
 	@echo "$(YELLOW)$(WD) ./$(DEFAULT)"
 	@norminette $(SRC_DIR) $(INC_DIR) | awk '/'Error'/ {print; found=1} END {if (!found) print "$(PURPLE)Norm OK$(DEFAULT)"}'
-
-.PHONY: testfile
-testfile:
-	@$(RM) testfile
-	@touch testfile
