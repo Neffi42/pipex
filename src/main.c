@@ -6,23 +6,13 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 12:41:00 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/26 15:17:25 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static int	close_nfd(int *fd, size_t n)
-{
-	size_t	i;
-
-	i = -1;
-	while (++i < n)
-		close(fd[i]);
-	return (1);
-}
-
-static void	open_io(const char *infile, const char *outfile, int *io2)
+static void	redirect_io(const char *infile, const char *outfile)
 {
 	int	io[2];
 
@@ -30,74 +20,50 @@ static void	open_io(const char *infile, const char *outfile, int *io2)
 	if (io[0] == -1)
 		error_errno();
 	io[1] = open(outfile, O_WRONLY);
-	if (io[1] == -1 && !close(io[0]))
+	if (io[1] == -1 && close_nfd(io, 1))
 		error_errno();
-	io2[0] = dup(STDIN_FILENO);
-	if (io2[0] == -1 && close_nfd(io, 2))
-		error_errno();
-	io2[1] = dup(STDOUT_FILENO);
-	if (io2[1] == -1 && close_nfd(io, 2) && !close(io2[0]))
-		error_errno();
-	io2[2] = dup2(io[0], STDIN_FILENO);
-	if (io2[0] == -1 && close_nfd(io, 2) && close_nfd(io2, 2))
-		error_errno();
-	io2[3] = dup2(io[1], STDOUT_FILENO);
-	if (close_nfd(io, 2) && io2[1] == -1 && close_nfd(io2, 3))
-		error_errno();
+	redirect_fd(io, 0, 2, STDIN_FILENO);
+	redirect_fd(io, 1, 2, STDOUT_FILENO);
 }
 
-static int	execute(const char *cmd, char **envp)
+static void	call_cmd(const char **cmd, char **envp, int *fd, int *nb_pipes)
 {
-	char	**tab;
-	int		status;
-
-	tab = ft_split(cmd, ' ');
-	if (!tab)
-		error_status(2, ERROR_MALLOC);
-	tab[0] = ft_freejoin("/usr/bin/", tab[0], 1);
-	if (!tab[0] && !ft_free_tab(tab))
-		error_status(2, ERROR_MALLOC);
-	status = execve(tab[0], tab, envp);
-	ft_free_tab(tab);
-	exit(status);
-}
-
-static void	call_cmd(const char *cmd, char **envp, int *io, int *fd)
-{
-	int		wstatus;
 	pid_t	pid;
+	int		wstatus;
 
 	pid = fork();
-	if (pid == -1 && close_nfd(io, 4) && close_nfd(fd, 2))
+	if (pid == -1 && close_nfd(fd, 2))
 		error_errno();
 	if (!pid)
 	{
-		execute(cmd, envp);
+		if (nb_pipes[0] + 1 < nb_pipes[1])
+			redirect_fd(fd, 1, 2, STDOUT_FILENO);
+		close_nfd(fd, 2);
+		execute(cmd[nb_pipes[0]], envp);
 	}
-	else
-	{
-		wait(&wstatus);
-		if (WIFEXITED(wstatus))
-			exit(WEXITSTATUS(wstatus));
+	wait(&wstatus);
+	if (!WIFEXITED(wstatus))
 		error_status(3, ERROR_WSTATUS);
-	}
+	wstatus = WEXITSTATUS(wstatus);
+	if (wstatus)
+		exit(wstatus);
+	if (++(nb_pipes[0]) < nb_pipes[1] && redirect_fd(fd, 0, 2, STDIN_FILENO))
+		call_cmd(cmd, envp, fd, nb_pipes);
 }
 
 int	main(int ac, const char **av, char **envp)
 {
-	int	io[4];
 	int	fd[2];
-	int	i;
+	int	nb_pipes[2];
 
 	if (ac < 5)
 		error_status(1, ERROR_USAGE);
-	open_io(av[1], av[ac - 1], io);
-	if (pipe(fd) == -1 && close_nfd(io, 4))
+	redirect_io(av[1], av[ac - 1]);
+	if (pipe(fd) == -1)
 		error_errno();
-	i = 1;
-	while (++i < ac - 1)
-		call_cmd(av[i], envp, io, fd);
+	nb_pipes[0] = 2;
+	nb_pipes[1] = ac - 1;
+	call_cmd(av, envp, fd, nb_pipes);
 	close_nfd(fd, 2);
-	close_nfd(io, 4);
 	exit(0);
 }

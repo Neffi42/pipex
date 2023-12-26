@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 12:37:42 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/26 15:16:01 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,8 @@
 
 void	error_errno(void);
 void	error_status(int status, char *message);
+int		close_nfd(int *fd, size_t n);
+int		execute(const char *cmd, char **envp);
+int		redirect_fd(int *newfd, int i, int len, int oldfd);
 
 #endif

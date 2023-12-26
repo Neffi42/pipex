@@ -36,13 +36,19 @@ endef
 INCLUDE := $(strip $(INCLUDE))
 
 define SRC :=
+	close_nfd.c
 	errors.c
+	execute.c
 	main.c
+	redirect_fd.c
 endef
 SRC := $(strip $(SRC))
 
 define BONUS_SRC :=
+	close_nfd.c
 	errors.c
+	execute.c
+	redirect_fd.c
 	$(addprefix $(BONUS_DIR)/, $(addsuffix _bonus.c, main))
 endef
 BONUS_SRC := $(strip $(BONUS_SRC))
