@@ -38,9 +38,10 @@ INCLUDE := $(strip $(INCLUDE))
 define SRC :=
 	check_wstatus.c
 	close_and_free.c
-	close_nfd.c
+	close_pipes.c
 	errors.c
-	execute.c
+	exec_child.c
+	init_controls.c
 	init_fd.c
 	main.c
 	redirect_fd.c
@@ -50,9 +51,10 @@ SRC := $(strip $(SRC))
 define BONUS_SRC :=
 	check_wstatus.c
 	close_and_free.c
-	close_nfd.c
+	close_pipes.c
 	errors.c
-	execute.c
+	exec_child.c
+	init_controls.c
 	init_fd.c
 	redirect_fd.c
 	$(addprefix $(BONUS_DIR)/, $(addsuffix _bonus.c, main))

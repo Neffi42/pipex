@@ -1,25 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   close_nfd.c                                        :+:      :+:    :+:   */
+/*   close_pipes.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/26 17:17:21 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 18:38:31 by abasdere         ###   ########.fr       */
+/*   Created: 2023/12/27 00:09:43 by abasdere          #+#    #+#             */
+/*   Updated: 2023/12/27 00:11:17 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	close_nfd(int *fd, size_t n)
+void	close_pipes(int **fd, int *controls)
 {
-	size_t	i;
-
-	if (!fd)
-		return (-1);
-	i = -1;
-	while (++i < n)
-		close(fd[i]);
-	return (1);
+	if (!controls[1])
+		close(fd[controls[1]++][0]);
+	else
+	{
+		close(fd[controls[1]][0]);
+		close(fd[controls[1]++][1]);
+	}
+	if (controls[0] + 1 == controls[2])
+		close(fd[0][1]);
 }

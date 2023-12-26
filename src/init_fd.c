@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 18:39:51 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 19:01:18 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/26 23:24:13 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,12 @@
 
 static void	redirect_io(const char *infile, const char *outfile, int **fd)
 {
-	int	io[2];
-
-	io[0] = open(infile, O_RDONLY);
-	if (io[0] == -1)
+	fd[0][0] = open(infile, O_RDONLY);
+	if (fd[0][0] == -1)
 		error_errno(fd, 0);
-	io[1] = open(outfile, O_WRONLY);
-	if (io[1] == -1 && close_nfd(io, 1))
+	fd[0][1] = open(outfile, O_WRONLY);
+	if (fd[0][1] == -1 && !close(fd[0][0]))
 		error_errno(fd, 0);
-	fd[0][0] = dup2(io[0], STDIN_FILENO);
-	if (fd[0][0] == -1 && close_nfd(io, 2))
-		error_errno(fd, 0);
-	fd[0][1] = dup2(io[1], STDOUT_FILENO);
-	if (close_nfd(io, 2) && fd[0][1] == -1)
-		error_errno(fd, 1);
 }
 
 int	**init_fd(int ac, const char **av)
