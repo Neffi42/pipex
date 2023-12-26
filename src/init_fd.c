@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 18:39:51 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 23:24:13 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/27 00:22:46 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ static void	redirect_io(const char *infile, const char *outfile, int **fd)
 	fd[0][0] = open(infile, O_RDONLY);
 	if (fd[0][0] == -1)
 		error_errno(fd, 0);
-	fd[0][1] = open(outfile, O_WRONLY);
+	fd[0][1] = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd[0][1] == -1 && !close(fd[0][0]))
 		error_errno(fd, 0);
 }
