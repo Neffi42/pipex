@@ -6,64 +6,58 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 15:17:25 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/26 19:16:14 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static void	redirect_io(const char *infile, const char *outfile)
+static void	exec_child(const char *cmd, char **envp, int **fd, int *controls)
 {
-	int	io[2];
-
-	io[0] = open(infile, O_RDONLY);
-	if (io[0] == -1)
-		error_errno();
-	io[1] = open(outfile, O_WRONLY);
-	if (io[1] == -1 && close_nfd(io, 1))
-		error_errno();
-	redirect_fd(io, 0, 2, STDIN_FILENO);
-	redirect_fd(io, 1, 2, STDOUT_FILENO);
+	if (controls[0] > 2)
+		redirect_fd(fd[controls[2]], 0, 2, fd[0][0]);
+	if (controls[0] + 1 < controls[1])
+		redirect_fd(fd[controls[2]], 1, 2, fd[0][1]);
+	execute(cmd, envp, fd);
 }
 
-static void	call_cmd(const char **cmd, char **envp, int *fd, int *nb_pipes)
+static void	init_controls(int *controls, int ac)
 {
-	pid_t	pid;
-	int		wstatus;
+	controls[0] = 1;
+	controls[1] = ac - 1;
+	controls[2] = 1;
+	controls[3] = 0;
+}
 
-	pid = fork();
-	if (pid == -1 && close_nfd(fd, 2))
-		error_errno();
-	if (!pid)
-	{
-		if (nb_pipes[0] + 1 < nb_pipes[1])
-			redirect_fd(fd, 1, 2, STDOUT_FILENO);
-		close_nfd(fd, 2);
-		execute(cmd[nb_pipes[0]], envp);
-	}
-	wait(&wstatus);
-	if (!WIFEXITED(wstatus))
-		error_status(3, ERROR_WSTATUS);
-	wstatus = WEXITSTATUS(wstatus);
-	if (wstatus)
-		exit(wstatus);
-	if (++(nb_pipes[0]) < nb_pipes[1] && redirect_fd(fd, 0, 2, STDIN_FILENO))
-		call_cmd(cmd, envp, fd, nb_pipes);
+static void	close_pipe(int **fd, int *controls, int ac)
+{
+	if (controls[0] == 2)
+		close(fd[0][0]);
+	else if (controls[0] > 2 && controls[2] < ac - 3)
+		close_nfd(fd[controls[2]++], 2);
 }
 
 int	main(int ac, const char **av, char **envp)
 {
-	int	fd[2];
-	int	nb_pipes[2];
+	int		**fd;
+	int		controls[4];
+	pid_t	pid;
 
 	if (ac < 5)
-		error_status(1, ERROR_USAGE);
-	redirect_io(av[1], av[ac - 1]);
-	if (pipe(fd) == -1)
-		error_errno();
-	nb_pipes[0] = 2;
-	nb_pipes[1] = ac - 1;
-	call_cmd(av, envp, fd, nb_pipes);
-	close_nfd(fd, 2);
+		error_status(1, ERROR_USAGE, NULL, 0);
+	fd = init_fd(ac, av);
+	init_controls(controls, ac);
+	while (++(controls[0]) < controls[1])
+	{
+		pid = fork();
+		if (pid == -1)
+			error_errno(fd, 1);
+		if (!pid)
+			exec_child(av[controls[0]], envp, fd, controls);
+		close_pipe(fd, controls, ac);
+		waitpid(pid, &(controls[3]), 0);
+		check_wstatus(controls[3], fd);
+	}
+	close_and_free(fd, 1);
 	exit(0);
 }

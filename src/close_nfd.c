@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/26 14:43:05 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 14:43:24 by abasdere         ###   ########.fr       */
+/*   Created: 2023/12/26 17:17:21 by abasdere          #+#    #+#             */
+/*   Updated: 2023/12/26 18:38:31 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@ int	close_nfd(int *fd, size_t n)
 {
 	size_t	i;
 
+	if (!fd)
+		return (-1);
 	i = -1;
 	while (++i < n)
 		close(fd[i]);

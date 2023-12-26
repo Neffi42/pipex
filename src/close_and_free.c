@@ -1,23 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   redirect_fd.c                                      :+:      :+:    :+:   */
+/*   close_and_free.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/26 14:40:44 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 18:26:42 by abasdere         ###   ########.fr       */
+/*   Created: 2023/12/26 17:08:02 by abasdere          #+#    #+#             */
+/*   Updated: 2023/12/26 18:21:29 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	redirect_fd(int *newfd, int i, int len, int oldfd)
+int	close_and_free(int **fd, int call_close)
 {
-	int	fd;
+	size_t	i;
+	size_t	j;
 
-	fd = dup2(newfd[i], oldfd);
-	if (fd == -1 && close_nfd(newfd, len))
-		error_errno(NULL, 0);
-	return (fd);
+	i = -1;
+	while (fd[++i])
+	{
+		j = -1;
+		while (call_close && fd[i][++j])
+			close(fd[i][j]);
+		free(fd[i]);
+	}
+	free(fd);
+	return (1);
 }

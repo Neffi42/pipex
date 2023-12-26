@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/26 15:16:01 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/26 19:00:55 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,13 @@
 # define ERROR_MALLOC "Malloc failed"
 # define ERROR_WSTATUS "Execution didn't terminated normally"
 
-void	error_errno(void);
-void	error_status(int status, char *message);
+void	error_errno(int **fd, int call_close);
+void	error_status(int status, char *message, int **fd, int call_close);
+int		close_and_free(int **fd, int call_close);
 int		close_nfd(int *fd, size_t n);
-int		execute(const char *cmd, char **envp);
+int		**init_fd(int ac, const char **av);
+int		execute(const char *cmd, char **envp, int **fd);
 int		redirect_fd(int *newfd, int i, int len, int oldfd);
+void	check_wstatus(int wstatus, int **fd);
 
 #endif

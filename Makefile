@@ -36,18 +36,24 @@ endef
 INCLUDE := $(strip $(INCLUDE))
 
 define SRC :=
+	check_wstatus.c
+	close_and_free.c
 	close_nfd.c
 	errors.c
 	execute.c
+	init_fd.c
 	main.c
 	redirect_fd.c
 endef
 SRC := $(strip $(SRC))
 
 define BONUS_SRC :=
+	check_wstatus.c
+	close_and_free.c
 	close_nfd.c
 	errors.c
 	execute.c
+	init_fd.c
 	redirect_fd.c
 	$(addprefix $(BONUS_DIR)/, $(addsuffix _bonus.c, main))
 endef
@@ -120,3 +126,8 @@ norm:
 	@make -C $(LIBFT_DIR) norm $(LIB_FLAGS)
 	@echo "$(YELLOW)$(WD) ./$(DEFAULT)"
 	@norminette $(SRC_DIR) $(INC_DIR) | awk '/'Error'/ {print; found=1} END {if (!found) print "$(PURPLE)Norm OK$(DEFAULT)"}'
+
+.PHONY: testfile
+testfile:
+	@$(RM) testfile
+	@touch testfile
