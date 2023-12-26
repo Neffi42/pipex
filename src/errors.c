@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/23 15:34:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/25 19:25:05 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/26 12:39:57 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,13 @@
 
 void	error_errno(void)
 {
-	perror(strerror(errno));
+	ft_dprintf(STDERR_FILENO, "%s\n", strerror(errno));
 	exit(errno);
 }
 
 void	error_status(int status, char *message)
 {
-	ft_dprintf(STDERR_FILENO, "%s\n", message);
+	if (message)
+		ft_dprintf(STDERR_FILENO, "%s\n", message);
 	exit(status);
 }
