@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/27 00:11:29 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/27 00:47:10 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 void	check_wstatus(int wstatus, int **fd);
 int		close_and_free(int **fd, int call_close);
 void	close_pipes(int **fd, int *controls);
+void	copy_file(const char *path1, const char *path2);
 void	error_errno(int **fd, int call_close);
 void	error_status(int status, char *message, int **fd, int call_close);
 void	exec_child(const char *cmd, char **envp, int **fd, int *controls);

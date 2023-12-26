@@ -38,6 +38,7 @@ define SRC :=
 	check_wstatus.c
 	close_and_free.c
 	close_pipes.c
+	copy_file.c
 	errors.c
 	exec_child.c
 	init_controls.c
