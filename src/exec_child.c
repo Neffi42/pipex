@@ -6,13 +6,13 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 14:39:46 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/27 01:39:31 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/27 01:41:59 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static int	execute(const char *cmd, char **envp, int **fd)
+static void	execute(const char *cmd, char **envp, int **fd)
 {
 	char	**tab;
 	int		status;
@@ -28,10 +28,10 @@ static int	execute(const char *cmd, char **envp, int **fd)
 		if (!tab[0] && !ft_free_tab(tab))
 			error_status(2, ERROR_MALLOC, fd, 1);
 		status = execve(tab[0], tab, envp);
+		exit(status);
 	}
-	else if (!tab[0] && !ft_free_tab(tab))
-		error_status(4, ERROR_NOT_FOUND, fd, 1);
-	exit(status);
+	ft_free_tab(tab);
+	error_status(4, ERROR_NOT_FOUND, fd, 1);
 }
 
 void	exec_child(const char *cmd, char **envp, int **fd, int *controls)
