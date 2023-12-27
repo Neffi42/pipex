@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/27 00:47:10 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/27 01:39:12 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # define ERROR_USAGE "Usage: ./pipex <infile> <cmd_1> ... <cmd_n> <outfile>"
 # define ERROR_MALLOC "Malloc failed"
 # define ERROR_WSTATUS "Execution didn't terminated normally"
+# define ERROR_NOT_FOUND "Command not found"
 
 void	check_wstatus(int wstatus, int **fd);
 int		close_and_free(int **fd, int call_close);
