@@ -6,32 +6,23 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/27 00:38:21 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/27 00:52:31 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/28 22:45:06 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	copy_file(const char *path1, const char *path2)
+void	copy_file(t_pipex *pipex)
 {
-	int		file1;
-	int		file2;
 	char	*line;
 
-	file1 = open(path1, O_RDONLY);
-	if (file1 == -1)
-		error_errno(NULL, 0);
-	file2 = open(path2, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (file2 == -1 && !close(file1))
-		error_errno(NULL, 0);
-	line = ft_get_next_line(file1);
+	line = ft_get_next_line(pipex->infile);
 	while (line)
 	{
-		write(file2, line, ft_strlen(line));
+		write(pipex->outfile, line, ft_strlen(line));
 		free(line);
-		line = ft_get_next_line(file1);
+		line = ft_get_next_line(pipex->infile);
 	}
-	close(file1);
-	close(file2);
-	exit (0);
+	close_and_free(pipex);
+	exit (EXIT_SUCCESS);
 }

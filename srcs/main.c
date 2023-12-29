@@ -6,35 +6,66 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/27 00:40:48 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/29 02:45:42 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	main(int ac, const char **av, char **envp)
+static void	close_pipes(t_pipex *pipex)
 {
-	int		**fd;
-	int		controls[4];
+	if (!pipex->pipes)
+		return ;
+	if (pipex->pipe && pipex->pipes[pipex->pipe - 1])
+		close(pipex->pipes[pipex->pipe - 1][0]);
+	if (pipex->pipes[pipex->pipe])
+		close(pipex->pipes[pipex->pipe++][1]);
+}
+
+static void	check_wstatus(t_pipex *pipex, int wstatus)
+{
+	int	status_code;
+
+	if (!WIFEXITED(wstatus) && ft_dprintf(2, "TSET\n"))
+		error_errno(pipex, wstatus, NULL);
+	status_code = WEXITSTATUS(wstatus);
+	if (status_code && close_and_free(pipex))
+		exit(status_code);
+}
+
+static void	child_creation(t_pipex *pipex, const char **av, int end)
+{
+	int		i;
+	int		wstatus;
 	pid_t	pid;
 
-	if (ac < 3)
-		error_status(1, ERROR_USAGE, NULL, 0);
-	if (ac == 3)
-		copy_file(av[1], av[2]);
-	fd = init_fd(ac, av);
-	init_controls(controls, ac);
-	while (++(controls[0]) < controls[2])
+	i = 1;
+	while (++i < end)
 	{
+		pipex->cmd = (char *)(av[i]);
+		if (!(*(pipex->cmd)))
+			error_status(pipex, 13, NULL);
 		pid = fork();
 		if (pid == -1)
-			error_errno(fd, 1);
+			error_errno(pipex, errno, NULL);
 		if (!pid)
-			exec_child(av[controls[0]], envp, fd, controls);
-		close_pipes(fd, controls);
-		waitpid(pid, &(controls[3]), 0);
-		check_wstatus(controls[3], fd);
+			call_exec(pipex, i, end);
+		close_pipes(pipex);
+		wait(&(wstatus));
+		check_wstatus(pipex, wstatus);
 	}
-	close_and_free(fd, 1);
-	exit(0);
+}
+
+int	main(int ac, const char **av, char **envp)
+{
+	t_pipex	pipex;
+
+	if (ac < 3)
+		error_status(NULL, CODE_USAGE, NULL);
+	init_pipex(&pipex, ac, av, envp);
+	if (pipex.nb_pipes < 0)
+		copy_file(&pipex);
+	child_creation(&pipex, av, ac - 1);
+	close_and_free(&pipex);
+	exit(EXIT_SUCCESS);
 }

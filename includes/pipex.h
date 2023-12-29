@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/27 01:39:12 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/29 02:45:30 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,20 +22,38 @@
 # include <unistd.h>
 # include "libft.h"
 
-# define ERROR_USAGE "Usage: ./pipex <infile> <cmd_1> ... <cmd_n> <outfile>"
-# define ERROR_MALLOC "Malloc failed"
-# define ERROR_WSTATUS "Execution didn't terminated normally"
-# define ERROR_NOT_FOUND "Command not found"
+typedef struct s_pipex
+{
+	char	**envp;
+	char	**path;
+	char	*pname;
+	int		infile;
+	int		outfile;
+	int		nb_pipes;
+	int		pipe;
+	int		**pipes;
+	char	*cmd;
+}	t_pipex;
 
-void	check_wstatus(int wstatus, int **fd);
-int		close_and_free(int **fd, int call_close);
-void	close_pipes(int **fd, int *controls);
-void	copy_file(const char *path1, const char *path2);
-void	error_errno(int **fd, int call_close);
-void	error_status(int status, char *message, int **fd, int call_close);
-void	exec_child(const char *cmd, char **envp, int **fd, int *controls);
-void	init_controls(int *controls, int ac);
-int		**init_fd(int ac, const char **av);
-int		redirect_fd(int newfd, int oldfd, int **fd);
+void	call_exec(t_pipex *pipex, int index, int end);
+int		close_and_free(t_pipex *pipex);
+void	copy_file(t_pipex *pipex);
+void	error_errno(t_pipex *pipex, int ernum, char *el);
+void	error_status(t_pipex *pipex, int code, char *el);
+void	print_error(char *pname, char *message, char *el);
+void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp);
+
+# define ERROR_USAGE "usage: ./pipex <infile> <cmd_1> ... <cmd_n> <outfile>"
+# define CODE_USAGE 1
+# define ERROR_MALLOC "malloc failed"
+# define CODE_MALLOC 2
+# define ERROR_NO_PATH "no $PATH found"
+# define CODE_NO_PATH 3
+# define ERROR_WSTATUS "execution didn't terminated normally"
+# define CODE_WSTATUS 4
+# define ERROR_CMD "command not found"
+# define CODE_CMD 5
+# define ERROR_PERM "permission denied"
+# define CODE_PERM 13
 
 #endif
