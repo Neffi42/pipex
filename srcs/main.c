@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/29 02:45:42 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/29 03:01:28 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,9 @@ int	main(int ac, const char **av, char **envp)
 {
 	t_pipex	pipex;
 
-	if (ac < 3)
-		error_status(NULL, CODE_USAGE, NULL);
 	init_pipex(&pipex, ac, av, envp);
+	if (ac < 3)
+		error_status(&pipex, CODE_USAGE, NULL);
 	if (pipex.nb_pipes < 0)
 		copy_file(&pipex);
 	child_creation(&pipex, av, ac - 1);

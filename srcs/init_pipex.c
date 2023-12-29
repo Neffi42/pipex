@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/28 22:18:11 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/29 00:33:15 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/29 03:02:42 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp)
 	pipex->pipe = 0;
 	pipex->pipes = NULL;
 	pipex->cmd = NULL;
+	if (ac < 3)
+		return ;
 	open_files(pipex, (char *)av[1], (char *)av[ac - 1]);
 	if (pipex->nb_pipes >= 0)
 	{
