@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/23 15:34:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/29 02:45:15 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/29 03:18:27 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,18 @@ static char	*find_message(int code)
 
 void	print_error(char *pname, char *message, char *el)
 {
+	size_t	i;
+
+	i = -1;
 	if (!pname || !message)
 		return ;
+	ft_dprintf(STDERR_FILENO, "%s: ", pname);
+	while (message[++i])
+		ft_putchar_fd(ft_tolower(message[i]), STDERR_FILENO);
 	if (el)
-		ft_dprintf(STDERR_FILENO, "%s: %s: %s\n", pname, message, el);
+		ft_dprintf(STDERR_FILENO, ": %s\n", el);
 	else
-		ft_dprintf(STDERR_FILENO, "%s: %s:\n", pname, message);
+		ft_putstr_fd(":\n", STDERR_FILENO);
 }
 
 void	error_errno(t_pipex *pipex, int ernum, char *el)

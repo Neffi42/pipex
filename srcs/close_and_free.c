@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 17:08:02 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/28 23:47:28 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/29 03:09:01 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int	close_and_free(t_pipex *pipex)
 	while (pipex->pipes && pipex->pipes[++i])
 	{
 		j = -1;
-		while (pipex->pipes[i][++j])
+		while (pipex->pipes[i][++j] > 0)
 			close(pipex->pipes[i][j]);
 		free(pipex->pipes[i]);
 	}
@@ -29,7 +29,9 @@ int	close_and_free(t_pipex *pipex)
 		free(pipex->pipes);
 	if (pipex->path)
 		ft_free_tab(pipex->path);
-	close(pipex->infile);
-	close(pipex->outfile);
+	if (pipex->infile > 0)
+		close(pipex->infile);
+	if (pipex->outfile > 0)
+		close(pipex->outfile);
 	return (1);
 }
