@@ -1,28 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   copy_file.c                                        :+:      :+:    :+:   */
+/*   redirect_fd.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/27 00:38:21 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/28 22:45:06 by abasdere         ###   ########.fr       */
+/*   Created: 2023/12/29 04:44:08 by abasdere          #+#    #+#             */
+/*   Updated: 2023/12/29 04:44:28 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	copy_file(t_pipex *pipex)
+int	redirect_fd(t_pipex *pipex, int newfd, int oldfd)
 {
-	char	*line;
+	int	fd2;
 
-	line = ft_get_next_line(pipex->infile);
-	while (line)
-	{
-		write(pipex->outfile, line, ft_strlen(line));
-		free(line);
-		line = ft_get_next_line(pipex->infile);
-	}
-	close_and_free(pipex);
-	exit (EXIT_SUCCESS);
+	fd2 = dup2(newfd, oldfd);
+	if (fd2 == -1)
+		error_errno(pipex, errno, "redirect_fd");
+	return (fd2);
 }

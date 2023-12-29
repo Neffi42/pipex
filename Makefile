@@ -34,12 +34,17 @@ endef
 INCLUDES := $(strip $(INCLUDES))
 
 define SRCS :=
-	call_exec.c
+	call_cat.c
+	call_cmd.c
+	check_wstatus.c
+	child_creation.c
 	close_and_free.c
-	copy_file.c
 	errors.c
+	execute.c
+	init_files.c
 	init_pipex.c
 	main.c
+	redirect_fd.c
 endef
 SRCS := $(strip $(SRCS))
 

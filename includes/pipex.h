@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/29 02:45:30 by abasdere         ###   ########.fr       */
+/*   Updated: 2023/12/29 04:49:13 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,16 +33,24 @@ typedef struct s_pipex
 	int		pipe;
 	int		**pipes;
 	char	*cmd;
+	int		here_doc;
+	char	*limiter;
 }	t_pipex;
 
-void	call_exec(t_pipex *pipex, int index, int end);
+void	call_cat(t_pipex *pipex);
+void	call_cmd(t_pipex *pipex);
+void	check_wstatus(t_pipex *pipex, int wstatus);
+void	child_creation(t_pipex *pipex, int ac, const char **av);
 int		close_and_free(t_pipex *pipex);
-void	copy_file(t_pipex *pipex);
+void	print_error(char *pname, char *message, char *el);
 void	error_errno(t_pipex *pipex, int ernum, char *el);
 void	error_status(t_pipex *pipex, int code, char *el);
-void	print_error(char *pname, char *message, char *el);
+void	execute(t_pipex *pipex, int index, int end);
+void	init_files(t_pipex *pipex, char *infile, char *outfile);
 void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp);
+int		redirect_fd(t_pipex *pipex, int newfd, int oldfd);
 
+# define HERE_DOC "here_doc"
 # define ERROR_USAGE "usage: ./pipex <infile> <cmd_1> ... <cmd_n> <outfile>"
 # define CODE_USAGE 1
 # define ERROR_MALLOC "malloc failed"

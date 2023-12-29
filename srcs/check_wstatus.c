@@ -1,31 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   check_wstatus.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/29 04:46:48 by abasdere         ###   ########.fr       */
+/*   Created: 2023/12/29 04:42:45 by abasdere          #+#    #+#             */
+/*   Updated: 2023/12/29 04:43:01 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	main(int ac, const char **av, char **envp)
+void	check_wstatus(t_pipex *pipex, int wstatus)
 {
-	t_pipex	pipex;
+	int	status_code;
 
-	init_pipex(&pipex, ac, av, envp);
-	if (ac < 3)
-		error_status(&pipex, CODE_USAGE, NULL);
-	if (pipex.here_doc)
-		pipex.infile = STDIN_FILENO;
-	init_files(&pipex, (char *)av[1], (char *)av[ac - 1]);
-	if (ac == 3 + pipex.here_doc)
-		call_cat(&pipex);
-	else
-		child_creation(&pipex, ac, av);
-	close_and_free(&pipex);
-	exit(EXIT_SUCCESS);
+	if (!WIFEXITED(wstatus) && ft_dprintf(2, "TSET\n"))
+		error_errno(pipex, wstatus, NULL);
+	status_code = WEXITSTATUS(wstatus);
+	if (status_code && close_and_free(pipex))
+		exit(status_code);
 }
