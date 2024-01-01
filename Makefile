@@ -85,6 +85,7 @@ re: fclean all
 
 $(LIBFT):
 	@echo "$(YELLOW)$(WD) ./$(LIBFT_DIR)$(DEFAULT)"
+	@git submodule update
 	@make -C $(LIBFT_DIR) $(LIB_FLAGS)
 	@echo "$(YELLOW)$(WD) ./$(DEFAULT)"
 
