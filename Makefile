@@ -34,7 +34,6 @@ endef
 INCLUDES := $(strip $(INCLUDES))
 
 define SRCS :=
-	execute.c
 	main.c
 	utils.c
 endef

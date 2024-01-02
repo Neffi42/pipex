@@ -6,40 +6,77 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/02 10:50:21 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/02 14:41:54 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static void	close_pipes(t_pipex *pipex)
+static char	*init_cmd(char *path, char *cmd_name)
 {
-	if (!pipex->pipes)
-		return ;
-	if (pipex->pipe && pipex->pipes[pipex->pipe - 1])
-		close(pipex->pipes[pipex->pipe - 1][0]);
-	if (pipex->pipes[pipex->pipe])
-		close(pipex->pipes[pipex->pipe++][1]);
+	char	*cmd;
+
+	cmd = ft_strjoin(path, "/");
+	if (!cmd)
+		return (NULL);
+	cmd = ft_freejoin(cmd, cmd_name, -1);
+	if (!cmd)
+		return (NULL);
+	return (cmd);
 }
 
-static pid_t	call_cmds(t_pipex *pipex, int ac, const char **av)
+static void	execute(t_pipex *pipex, int in, int out)
+{
+	size_t	i;
+	char	**tab;
+	char	*cmd;
+
+	if (dup2(in, STDIN_FILENO) == -1 || dup2(out, STDOUT_FILENO) == -1)
+		(perror(PNAME), close(in), close(out), free_all(pipex), exit(errno));
+	(close(in), close(out), i = -1);
+	tab = ft_split(pipex->cmd, ' ');
+	if (!tab)
+		(perror(PNAME), free_all(pipex), exit(errno));
+	while (pipex->path[++(i)])
+	{
+		cmd = init_cmd(pipex->path[i], tab[0]);
+		if (!cmd)
+			(perror(PNAME), ft_free_tab(tab), free_all(pipex), exit(errno));
+		if (!access(cmd, X_OK))
+			execve(cmd, tab, pipex->envp);
+		free(cmd);
+	}
+	(ft_free_tab(tab), free_all(pipex));
+	exit(error(CODE_CMD, PNAME, ERROR_CMD));
+}
+
+static pid_t	call_cmds(t_pipex *pipex, int ac, const char **av, int start)
 {
 	pid_t	pid;
 	int		i;
+	int		tab[2];
 
-	i = 1 + pipex->here_doc;
-	while (++i < ac - 1)
+	i = 0;
+	while (++start < ac - 1)
 	{
-		pipex->cmd = (char *)(av[i]);
+		pipex->cmd = (char *)(av[start]);
 		pid = fork();
-		if (pid == -1 && close_and_free(pipex))
-			return (perror(PNAME), errno);
+		if (pid == -1)
+			(perror(PNAME), free_all(pipex), exit(errno));
 		if (!pid)
-			execute(pipex, i, ac - 1);
-		close_pipes(pipex);
+		{
+			if (start == 2 + pipex->here_doc)
+				tab[0] = pipex->infile;
+			else
+				tab[0] = pipex->pipes[i++][0];
+			if (start == ac - 2)
+				tab[1] = pipex->outfile;
+			else
+				tab[1] = pipex->pipes[i][1];
+			execute(pipex, tab[0], tab[1]);
+		}
 	}
-	close_and_free(pipex);
-	return (pid);
+	return (free_all(pipex), pid);
 }
 
 static int	wait_processes(pid_t pid)
@@ -70,5 +107,5 @@ int	main(int ac, const char **av, char **envp)
 	if (ac < 5)
 		error(EXIT_FAILURE, PNAME, ERROR_USAGE);
 	init_pipex(&pipex, ac, av, envp);
-	return (wait_processes(call_cmds(&pipex, ac, av)));
+	return (wait_processes(call_cmds(&pipex, ac, av, 1 + pipex.here_doc)));
 }

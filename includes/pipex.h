@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/02 10:51:01 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/02 14:41:10 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,13 @@ typedef struct s_pipex
 	int		infile;
 	int		outfile;
 	int		nb_pipes;
-	int		pipe;
 	int		**pipes;
 	char	*cmd;
 	int		here_doc;
 	char	*limiter;
 }	t_pipex;
 
-int		close_and_free(t_pipex *pipex);
-void	call_cmd(t_pipex *pipex, int index, int end);
+void	free_all(t_pipex *pipex);
 void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp);
 int		error(int code, char *name, char *message);
 
