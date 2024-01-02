@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/02 20:11:16 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/02 21:17:01 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,38 +32,40 @@ static char	*init_cmd(char **path, char *cmd_name)
 	return (cmd_name);
 }
 
-static void	execute(t_pipex *pipex, int in, int out)
+static void	execute(t_pipex *pipex, int *fd)
 {
 	char	**args;
 	char	*cmd;
 
-	in = dup2(in, STDIN_FILENO);
-	out = dup2(out, STDOUT_FILENO);
-	if (in == -1 || out == -1)
-		(perror("dup2"), close(in), close(out), free_all(pipex), exit(errno));
+	fd[3] = dup2(fd[0], STDIN_FILENO);
+	fd[4] = dup2(fd[1], STDOUT_FILENO);
+	if (fd[3] == -1 || fd[4] == -1)
+		(perror("dup2"), close(fd[3]), close(fd[4]), free_all(pipex), \
+		exit(errno));
 	(close_all(pipex), args = ft_split(pipex->cmd, ' '));
 	if (!args)
-		(ft_dprintf(2, "%s", ERR_MEM), close(in), close(out), \
+		(ft_dprintf(2, "%s", ERR_MEM), close(fd[3]), close(fd[4]), \
 		free_all(pipex), exit(-1));
 	cmd = pipex->cmd;
 	if (args[0])
 		cmd = init_cmd(pipex->path, args[0]);
 	if (!cmd)
 		(ft_dprintf(2, "%s", ERR_MEM), \
-		ft_free_tab(args), close(in), close(out), free_all(pipex), exit(-1));
+		ft_free_tab(args), close(fd[3]), close(fd[4]), free_all(pipex), \
+		exit(-1));
 	execve(cmd, args, pipex->envp);
 	if (cmd == pipex->cmd)
 		ft_dprintf(2, "%s: %s", cmd, ERR_CMD);
 	else
 		ft_dprintf(2, "%s: %s", args[0], ERR_CMD);
-	(free_all(pipex), close(in), close(out), ft_free_tab(args), exit(127));
+	(free_all(pipex), close(fd[3]), close(fd[4]), ft_free_tab(args), exit(127));
 }
 
 static pid_t	call_cmds(t_pipex *pipex, char **cmds)
 {
 	pid_t	pid;
 	int		i;
-	int		tab[2];
+	int		fd[4];
 
 	i = -1;
 	while (++i <= pipex->nb_pipes)
@@ -75,14 +77,14 @@ static pid_t	call_cmds(t_pipex *pipex, char **cmds)
 		if (!pid)
 		{
 			if (!i)
-				tab[0] = pipex->infile;
+				fd[0] = pipex->infile;
 			else
-				tab[0] = pipex->pipes[i - 1][0];
+				fd[0] = pipex->pipes[i - 1][0];
 			if (i == pipex->nb_pipes)
-				tab[1] = pipex->outfile;
+				fd[1] = pipex->outfile;
 			else
-				tab[1] = pipex->pipes[i][1];
-			execute(pipex, tab[0], tab[1]);
+				fd[1] = pipex->pipes[i][1];
+			execute(pipex, fd);
 		}
 	}
 	return (free_all(pipex), pid);
