@@ -6,49 +6,11 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/26 14:39:46 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/02 01:11:37 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/02 10:55:38 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-
-static char	*init_cmd(char *path, char *cmd_name)
-{
-	char	*cmd;
-
-	cmd = ft_strjoin(path, "/");
-	if (!cmd)
-		return (NULL);
-	cmd = ft_freejoin(cmd, cmd_name, -1);
-	if (!cmd)
-		return (NULL);
-	return (cmd);
-}
-
-static int	call_cmd(t_pipex *pipex)
-{
-	size_t	i;
-	char	**tab;
-	char	*cmd;
-
-	i = -1;
-	tab = ft_split(pipex->cmd, ' ');
-	if (!tab)
-		return (perror(PNAME), (void)close_and_free(pipex), errno);
-	while (pipex->path[++(i)])
-	{
-		cmd = init_cmd(pipex->path[i], tab[0]);
-		if (!cmd && !ft_free_tab(tab))
-			return (perror(PNAME), (void)close_and_free(pipex), errno);
-		if (!access(cmd, X_OK))
-			execve(cmd, tab, pipex->envp);
-		free(cmd);
-	}
-	print_error(ERROR_CMD, tab[0]);
-	ft_free_tab(tab);
-	close_and_free(pipex);
-	return (CODE_CMD);
-}
 
 static int	redirect_fd(t_pipex *pipex, int newfd, int oldfd)
 {
@@ -63,7 +25,43 @@ static int	redirect_fd(t_pipex *pipex, int newfd, int oldfd)
 	return (fd2);
 }
 
-void	execute(t_pipex *pipex, int index, int end)
+static char	*init_cmd(char *path, char *cmd_name)
+{
+	char	*cmd;
+
+	cmd = ft_strjoin(path, "/");
+	if (!cmd)
+		return (NULL);
+	cmd = ft_freejoin(cmd, cmd_name, -1);
+	if (!cmd)
+		return (NULL);
+	return (cmd);
+}
+
+static int	execute(t_pipex *pipex)
+{
+	size_t	i;
+	char	**tab;
+	char	*cmd;
+
+	i = -1;
+	tab = ft_split(pipex->cmd, ' ');
+	if (!tab && close_and_free(pipex))
+		return (perror(PNAME), errno);
+	while (pipex->path[++(i)])
+	{
+		cmd = init_cmd(pipex->path[i], tab[0]);
+		if (!cmd && !ft_free_tab(tab))
+			return (perror(PNAME), (void)close_and_free(pipex), errno);
+		if (!access(cmd, X_OK))
+			execve(cmd, tab, pipex->envp);
+		free(cmd);
+	}
+	return ((void)ft_free_tab(tab), (void)close_and_free(pipex), \
+	error(CODE_CMD, PNAME, ERROR_CMD));
+}
+
+void	call_cmd(t_pipex *pipex, int index, int end)
 {
 	size_t	i;
 
@@ -81,5 +79,5 @@ void	execute(t_pipex *pipex, int index, int end)
 		close(pipex->pipes[i][0]);
 		close(pipex->pipes[i][1]);
 	}
-	exit(call_cmd(pipex));
+	exit(execute(pipex));
 }

@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/01 23:45:08 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/02 01:24:13 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/02 10:49:28 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,15 @@ static int	find_path(t_pipex *pipex)
 	i = 0;
 	while (pipex->envp[i] && !ft_strnstr(pipex->envp[i], "PATH", 4))
 		i++;
-	if (!pipex->envp[i])
-		error(pipex, CODE_NO_PATH, NULL);
+	if (!pipex->envp[i] && close_and_free(pipex))
+		return (error(EXIT_FAILURE, PNAME, ERROR_NO_PATH));
 	path = ft_substr(pipex->envp[i], 5, ft_strlen(pipex->envp[i]) - 5);
-	if (!path)
-		return (perror(PNAME), (void)close_and_free(pipex), errno);
+	if (!path && close_and_free(pipex))
+		return (perror(PNAME), errno);
 	pipex->path = ft_split(path, ':');
 	free(path);
-	if (!pipex->path)
-		return (perror(PNAME), (void)close_and_free(pipex), errno);
+	if (!pipex->path && close_and_free(pipex))
+		return (perror(PNAME), errno);
 	return (EXIT_SUCCESS);
 }
 
@@ -38,8 +38,8 @@ static int	init_pipes(t_pipex *pipex)
 
 	i = -1;
 	pipex->pipes = ft_calloc(pipex->nb_pipes + 1, sizeof(int *));
-	if (!pipex->pipes)
-		return (perror(PNAME), (void)close_and_free(pipex), errno);
+	if (!pipex->pipes && close_and_free(pipex))
+		return (perror(PNAME), errno);
 	pipex->pipes[pipex->nb_pipes] = NULL;
 	while (++i < pipex->nb_pipes)
 	{
@@ -100,4 +100,11 @@ int	close_and_free(t_pipex *pipex)
 	if (pipex->outfile > 0)
 		close(pipex->outfile);
 	return (EXIT_SUCCESS);
+}
+
+
+int	error(int code, char *name, char *message)
+{
+	ft_dprintf(STDERR_FILENO, "%s: %s\n", name, message);
+	return (code);
 }
