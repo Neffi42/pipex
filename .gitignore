@@ -2,7 +2,7 @@
 .vscode
 pipex
 objs
-testfile
+testfile*
 
 # Prerequisites
 *.d

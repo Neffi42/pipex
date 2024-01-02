@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/29 04:49:13 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/02 01:15:47 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ typedef struct s_pipex
 {
 	char	**envp;
 	char	**path;
-	char	*pname;
 	int		infile;
 	int		outfile;
 	int		nb_pipes;
@@ -37,19 +36,14 @@ typedef struct s_pipex
 	char	*limiter;
 }	t_pipex;
 
-void	call_cat(t_pipex *pipex);
-void	call_cmd(t_pipex *pipex);
-void	check_wstatus(t_pipex *pipex, int wstatus);
-void	child_creation(t_pipex *pipex, int ac, const char **av);
 int		close_and_free(t_pipex *pipex);
-void	print_error(char *pname, char *message, char *el);
-void	error_errno(t_pipex *pipex, int ernum, char *el);
-void	error_status(t_pipex *pipex, int code, char *el);
 void	execute(t_pipex *pipex, int index, int end);
-void	init_files(t_pipex *pipex, char *infile, char *outfile);
 void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp);
-int		redirect_fd(t_pipex *pipex, int newfd, int oldfd);
+void	error(t_pipex *pipex, int code, char *el);
+void	print_error(char *message, char *el);
+int		wait_all(int start, int end);
 
+# define PNAME "pipex"
 # define HERE_DOC "here_doc"
 # define ERROR_USAGE "usage: ./pipex <infile> <cmd_1> ... <cmd_n> <outfile>"
 # define CODE_USAGE 1

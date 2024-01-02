@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   errors.c                                           :+:      :+:    :+:   */
+/*   utils_errors.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/23 15:34:58 by abasdere          #+#    #+#             */
-/*   Updated: 2023/12/29 03:18:27 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/02 01:17:57 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,37 +27,33 @@ static char	*find_message(int code)
 	return (NULL);
 }
 
-void	print_error(char *pname, char *message, char *el)
+void	print_error(char *message, char *el)
 {
 	size_t	i;
 
 	i = -1;
-	if (!pname || !message)
+	if (!message)
 		return ;
-	ft_dprintf(STDERR_FILENO, "%s: ", pname);
 	while (message[++i])
-		ft_putchar_fd(ft_tolower(message[i]), STDERR_FILENO);
+		message[i] = ft_tolower(message[i]);
 	if (el)
-		ft_dprintf(STDERR_FILENO, ": %s\n", el);
+		ft_dprintf(STDERR_FILENO, "%s: %s: %s\n", PNAME, message, el);
 	else
-		ft_putstr_fd(":\n", STDERR_FILENO);
+		ft_dprintf(STDERR_FILENO, "%s: %s:\n", PNAME, message);
 }
 
-void	error_errno(t_pipex *pipex, int ernum, char *el)
+void	error(t_pipex *pipex, int code, char *el)
 {
-	if (pipex)
-	{
-		print_error(pipex->pname, strerror(ernum), el);
-		close_and_free(pipex);
-	}
-	exit(ernum);
-}
-
-void	error_status(t_pipex *pipex, int code, char *el)
-{
-	if (pipex && code > 0)
-		print_error(pipex->pname, find_message(code), el);
+	if (code > 0)
+		print_error(find_message(code), el);
 	if (pipex)
 		close_and_free(pipex);
 	exit(code);
+}
+
+int	wait_all(int start, int end)
+{
+	while (start++ < end)
+		wait(NULL);
+	return (EXIT_FAILURE);
 }
