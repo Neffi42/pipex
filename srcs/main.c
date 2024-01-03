@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/03 14:01:03 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/03 14:16:47 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ static char	*init_cmd(char **path, char *cmd_name)
 	char	*cmd;
 	int		i;
 
-	if (!access(cmd_name, X_OK))
+	if (!path || !access(cmd_name, X_OK))
 		return (cmd_name);
 	i = -1;
 	while (path[++i])

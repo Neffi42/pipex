@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/01 23:45:08 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/02 21:22:21 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/03 14:12:50 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,7 @@ static void	find_path(t_pipex *pipex)
 	while (pipex->envp[i] && !ft_strnstr(pipex->envp[i], "PATH", 4))
 		i++;
 	if (!pipex->envp[i])
-		(free_all(pipex), ft_dprintf(STDERR_FILENO, "%s: %s\n", \
-		"PATH", ERR_PATH), exit(-1));
+		return ;
 	path = ft_substr(pipex->envp[i], 5, ft_strlen(pipex->envp[i]) - 5);
 	if (!path)
 		(ft_dprintf(STDERR_FILENO, "%s", ERR_MEM), free_all(pipex), exit(-1));
