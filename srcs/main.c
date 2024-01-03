@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/03 14:16:47 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/03 19:06:02 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,12 +107,41 @@ static int	wait_childs(pid_t pid)
 	return (x);
 }
 
+static char	*find_heredoc(t_pipex *pipex)
+{
+	char	*file;
+	int		i;
+
+	i = 2;
+	file = ft_calloc(i, sizeof(char));
+	if (!file)
+		(ft_dprintf(STDERR_FILENO, "%s", ERR_MEM), free_all(pipex), exit(-1));
+	ft_memset(file, 'h', i - 1);
+	while (!access(file, F_OK) && errno != ENOENT)
+	{
+		(free(file), file = ft_calloc(++i, sizeof(char)));
+		if ((i < 0 || !file) && ft_dprintf(STDERR_FILENO, "%s", ERR_MEM))
+			(free_all(pipex), exit(-1));
+		ft_memset(file, 'h', i - 1);
+	}
+	return (file);
+}
+
 int	main(int ac, const char **av, char **envp)
 {
 	t_pipex	pipex;
+	char	*file;
 
 	if (ac < 5)
 		(ft_dprintf(STDERR_FILENO, "%s", ERR_ARGS), exit(-1));
+	pipex.here_doc = !ft_strncmp(av[1], "here_doc", ft_strlen("here_doc"));
+	if (pipex.here_doc && ac < 6)
+		(ft_dprintf(STDERR_FILENO, "%s", ERR_BONUS), exit(-1));
 	init_pipex(&pipex, ac, av, envp);
+	if (pipex.here_doc)
+	{
+		file = find_heredoc(&pipex);
+		free(file);
+	}
 	return (wait_childs(call_cmds(&pipex, (char **)(av + 2 + pipex.here_doc))));
 }

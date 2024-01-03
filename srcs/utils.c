@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/01 23:45:08 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/03 14:12:50 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/03 19:06:03 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,13 +57,17 @@ void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp)
 	pipex->path = NULL;
 	pipex->pipes = NULL;
 	pipex->limiter = (char *)av[2];
-	pipex->here_doc = !ft_strncmp(av[1], "here_doc", ft_strlen("here_doc"));
+	if (pipex->here_doc && !(*pipex->limiter))
+		(ft_dprintf(STDERR_FILENO, "%s", ERR_LIM), exit(EXIT_FAILURE));
 	pipex->infile = STDIN_FILENO;
 	if (!pipex->here_doc)
 		pipex->infile = open(av[1], O_RDONLY);
 	if (pipex->infile == -1)
 		(perror("open"), free_all(pipex), exit(errno));
-	pipex->outfile = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (pipex->here_doc)
+		pipex->outfile = open(av[ac - 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
+	else
+		pipex->outfile = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (pipex->outfile == -1)
 		(perror("open"), free_all(pipex), exit(errno));
 	(find_path(pipex), init_pipes(pipex));
