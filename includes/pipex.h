@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/02 20:10:03 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/03 13:53:45 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp);
 
 # define ERR_ARGS "usage: ./pipex <infile> <cmd_1> ... <cmd_n> <outfile>\n"
 # define ERR_CMD "command not found\n"
+# define ERR_CMD2 "Command '' not found\n"
 # define ERR_MEM "memory allocation error\n"
 # define ERR_PATH "no $PATH found\n"
 
