@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/03 13:56:27 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/03 14:01:03 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ static void	execute(t_pipex *pipex, int *fd)
 		(perror("dup2"), free_all(pipex), exit(errno));
 	(close_all(pipex), args = ft_split(pipex->cmd, ' '));
 	if (!args)
-		(ft_dprintf(STDERR_FILENO, "%s", "TEST\n"), free_all(pipex), exit(-1));
+		(ft_dprintf(STDERR_FILENO, "%s", ERR_MEM), free_all(pipex), exit(-1));
 	cmd = pipex->cmd;
 	if (args[0])
 		cmd = init_cmd(pipex->path, args[0]);
