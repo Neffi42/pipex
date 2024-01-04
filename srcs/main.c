@@ -6,30 +6,34 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 12:23:11 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 14:15:29 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static char	*init_cmd(char **path, char *cmd_name)
+static char	*init_cmd(t_pipex *pipex, char *s, char **args)
 {
 	char	*cmd;
 	int		i;
 
-	if (!path || !access(cmd_name, X_OK))
-		return (cmd_name);
+	if (ft_strchr(s, '/') != NULL && access(s, F_OK | X_OK) == 0)
+		return (s);
+	else if (ft_strchr(s, '/') != NULL && access(s, F_OK | X_OK) != 0)
+		(ft_dprintf(2, "%s: %s", s, ERR_CMD), free_all(pipex, 0), \
+		ft_free_tab(args), exit(127));
 	i = -1;
-	while (path[++i])
+	while (pipex->path && pipex->path[++i])
 	{
-		cmd = ft_freejoin(ft_strjoin(path[i], "/"), cmd_name, -1);
+		cmd = ft_freejoin(ft_strjoin(pipex->path[i], "/"), s, -1);
 		if (!cmd)
-			return (NULL);
+			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), \
+			ft_free_tab(args), exit(-1));
 		if (!access(cmd, X_OK))
 			return (cmd);
 		free(cmd);
 	}
-	return (cmd_name);
+	return (NULL);
 }
 
 static void	execute(t_pipex *pipex, int *fd)
@@ -47,10 +51,10 @@ static void	execute(t_pipex *pipex, int *fd)
 		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
 	cmd = pipex->cmd;
 	if (args[0])
-		cmd = init_cmd(pipex->path, args[0]);
+		cmd = init_cmd(pipex, args[0], args);
 	if (!cmd)
-		(ft_dprintf(2, "%s", ERR_MEM), ft_free_tab(args), \
-		free_all(pipex, 0), exit(-1));
+		(ft_dprintf(2, "%s: %s", args[0], ERR_CMD), free_all(pipex, 0), \
+		ft_free_tab(args), exit(127));
 	execve(cmd, args, pipex->envp);
 	if (cmd == pipex->cmd)
 		ft_dprintf(2, "%s: %s", cmd, ERR_CMD);
