@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/01 23:45:08 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 11:27:06 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 12:22:34 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,7 @@ static void	init_pipes(t_pipex *pipex)
 	{
 		pipex->pipes[i] = ft_calloc(3, sizeof(int));
 		if (!pipex->pipes[i] || pipe(pipex->pipes[i]) == -1)
-			(ft_dprintf(STDERR_FILENO, "%s", ERR_MEM), free_all(pipex, 0), \
-			exit(-1));
+			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
 	}
 }
 
@@ -116,7 +115,7 @@ int	find_heredoc(t_pipex *pipex)
 	while (!access(file, F_OK) && errno != ENOENT)
 	{
 		(free(file), file = ft_calloc(++i, sizeof(char)));
-		if ((i < 0 || !file) && ft_dprintf(STDERR_FILENO, "%s", ERR_MEM))
+		if ((i < 0 || !file) && ft_dprintf(2, "%s", ERR_MEM))
 			(free_all(pipex, 0), exit(-1));
 		ft_memset(file, 'h', i - 1);
 	}
@@ -124,6 +123,6 @@ int	find_heredoc(t_pipex *pipex)
 	pipex->infile = open(file, O_RDONLY);
 	(unlink(file), free(file));
 	if (pipex->infile == -1 || fd == -1)
-		(perror("open"), close(fd), free_all(&pipex, 0), exit(errno));
+		(perror("open"), close(fd), free_all(pipex, 0), exit(errno));
 	return (fd);
 }
