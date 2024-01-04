@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 11:25:36 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 15:09:54 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ typedef struct s_pipex
 	int		outfile;
 	int		nb_pipes;
 	int		**pipes;
-	char	*cmd;
+	char	**cmd;
 	int		here_doc;
 	char	*limiter;
 }	t_pipex;
