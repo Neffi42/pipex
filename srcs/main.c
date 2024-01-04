@@ -6,97 +6,106 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 15:21:10 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 19:15:08 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static char	*init_cmd(t_pipex *pipex, char *s)
+static void	execute(t_pipex *pipex, int index, pid_t *pid)
 {
-	char	*cmd;
+	int		fd[2];
+	size_t	i;
+
+	i = -1;
+	if (!index)
+		fd[0] = pipex->infile;
+	else
+		fd[0] = pipex->pipes[index - 1][0];
+	if (index == pipex->nb_pipes)
+		fd[1] = pipex->outfile;
+	else
+		fd[1] = pipex->pipes[index][1];
+	*pid = fork();
+	if (*pid == -1)
+		(perror("fork"), free_all(pipex), exit(-1));
+	if (!(*pid))
+	{
+		if (dup2(fd[0], STDIN_FILENO) == -1 || dup2(fd[1], STDOUT_FILENO) == -1)
+			(perror("dup2"), free_all(pipex), exit(-1));
+		while (pipex->pipes[++i])
+			(close(pipex->pipes[i][0]), close(pipex->pipes[i][1]));
+		(close(pipex->infile), close(pipex->outfile));
+		execve(pipex->cmd[0], pipex->cmd, pipex->envp);
+		(perror("execve"), free_all(pipex), exit(-1));
+	}
+}
+
+static int	init_cmd(t_pipex *pipex)
+{
+	char	*name;
+	char	*tmp;
 	int		i;
 
-	if (ft_strchr(s, '/') != NULL && access(s, F_OK | X_OK) == 0)
-		return (s);
-	else if (ft_strchr(s, '/') != NULL && access(s, F_OK | X_OK) != 0)
-		return ((void)ft_dprintf(2, "%s: %s", pipex->cmd[0], ERR_CMD), NULL);
+	name = pipex->cmd[0];
+	if (ft_strchr(name, '/') != NULL && access(name, F_OK | X_OK) != 0)
+		return (127);
+	else if (ft_strchr(name, '/') != NULL && access(name, F_OK | X_OK) == 0)
+		return (0);
 	i = -1;
 	while (pipex->path && pipex->path[++i])
 	{
-		cmd = ft_freejoin(ft_strjoin(pipex->path[i], "/"), s, -1);
-		if (!cmd)
-			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
-		if (!access(cmd, X_OK))
-			return (cmd);
-		free(cmd);
+		tmp = ft_freejoin(ft_strjoin(pipex->path[i], "/"), name, -1);
+		if (!tmp)
+			return (-1);
+		if (!access(tmp, X_OK))
+		{
+			(free(pipex->cmd[0]), pipex->cmd[0] = tmp);
+			return (0);
+		}
+		free(tmp);
 	}
-	return ((void)ft_dprintf(2, "%s: %s", pipex->cmd[0], ERR_CMD), NULL);
+	return (127);
 }
 
-static void	execute(t_pipex *pipex, int *fd)
-{
-	char	*cmd;
-
-	if (!pipex->cmd[0] || !pipex->cmd[0][0])
-		(ft_dprintf(2, "%s: %s", pipex->cmd, ERR_CMD), \
-		free_all(pipex, 0), exit(127));
-	if (dup2(fd[0], STDIN_FILENO) == -1 || dup2(fd[1], STDOUT_FILENO) == -1)
-		(perror("dup2"), free_all(pipex, 0), exit(errno));
-	(free_all(pipex, 1), cmd = init_cmd(pipex, pipex->cmd[0]));
-	if (!cmd)
-		(free_all(pipex, 0), exit(127));
-	execve(cmd, pipex->cmd, pipex->envp);
-	(ft_dprintf(2, "%s: %s", pipex->cmd[0], ERR_CMD), free_all(pipex, 0));
-	exit(127);
-}
-
-static pid_t	call_cmds(t_pipex *pipex, char **cmds)
+static pid_t	call_cmds(t_pipex *pipex, char **av)
 {
 	pid_t	pid;
 	int		i;
-	int		fd[2];
+	int		code;
 
 	i = -1;
-	while (++i <= pipex->nb_pipes && ft_free_tab(pipex->cmd))
+	while (++i <= pipex->nb_pipes && ++av)
 	{
-		pipex->cmd = ft_split(*(cmds++), ' ');
-		if (!pipex->cmd)
-			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
-		pid = fork();
-		if (pid == -1)
-			(perror("fork"), free_all(pipex, 0), exit(errno));
-		if (!pid)
+		(ft_free_tab(pipex->cmd), pipex->cmd = ft_split(*(av), ' '));
+		if (!pipex->cmd || !pipex->cmd[0])
 		{
-			fd[0] = pipex->pipes[i - 1][0];
-			if (!i)
-				fd[0] = pipex->infile;
-			fd[1] = pipex->pipes[i][1];
-			if (i == pipex->nb_pipes)
-				fd[1] = pipex->outfile;
-			execute(pipex, fd);
+			(ft_dprintf(2, "%s: %s", *av, ERR_CMD), pid = -1);
+			continue ;
 		}
+		code = init_cmd(pipex);
+		if (code == -1)
+			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
+		else if (code == 127)
+			(ft_dprintf(2, "%s: %s", pipex->cmd[0], ERR_CMD), pid = -1);
+		else
+			execute(pipex, i, &pid);
 	}
-	return (free_all(pipex, 0), pid);
+	return (free_all(pipex), pid);
 }
 
 static int	wait_childs(pid_t pid)
 {
 	int	wstatus;
-	int	x;
+	int	code;
 
-	x = EXIT_FAILURE;
+	code = EXIT_FAILURE;
 	while (errno != ECHILD)
-	{
-		if (wait(&wstatus) == pid)
-		{
-			if (WIFEXITED(wstatus))
-				x = WEXITSTATUS(wstatus);
-			else
-				x = 128 + WTERMSIG(wstatus);
-		}
-	}
-	return (x);
+		if (wait(&wstatus) == pid && WIFEXITED(wstatus))
+			code = WEXITSTATUS(wstatus);
+	if (pid == -1)
+		return (127);
+	return (code);
 }
 
 int	main(int ac, const char **av, char **envp)
@@ -122,5 +131,5 @@ int	main(int ac, const char **av, char **envp)
 		}
 		(free(line), close(fd));
 	}
-	return (wait_childs(call_cmds(&pipex, (char **)(av + 2 + pipex.here_doc))));
+	return (wait_childs(call_cmds(&pipex, (char **)(av + 1 + pipex.here_doc))));
 }

@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 15:09:54 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 18:10:26 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ typedef struct s_pipex
 	char	*limiter;
 }	t_pipex;
 
-void	free_all(t_pipex *pipex, int close_only);
+void	free_all(t_pipex *pipex);
 int		find_heredoc(t_pipex *pipex);
 void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp);
 

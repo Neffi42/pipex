@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/01 23:45:08 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 12:22:34 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 19:01:25 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,11 @@ static void	find_path(t_pipex *pipex)
 		return ;
 	path = ft_substr(pipex->envp[i], 5, ft_strlen(pipex->envp[i]) - 5);
 	if (!path)
-		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
+		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
 	pipex->path = ft_split(path, ':');
 	free(path);
 	if (!pipex->path)
-		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
+		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
 }
 
 static void	init_pipes(t_pipex *pipex)
@@ -38,13 +38,13 @@ static void	init_pipes(t_pipex *pipex)
 	i = -1;
 	pipex->pipes = ft_calloc(pipex->nb_pipes + 1, sizeof(int *));
 	if (!pipex->pipes)
-		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
+		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
 	pipex->pipes[pipex->nb_pipes] = NULL;
 	while (++i < pipex->nb_pipes)
 	{
 		pipex->pipes[i] = ft_calloc(3, sizeof(int));
 		if (!pipex->pipes[i] || pipe(pipex->pipes[i]) == -1)
-			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
+			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
 	}
 }
 
@@ -62,7 +62,7 @@ void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp)
 	{
 		pipex->limiter = ft_strjoin((char *)av[2], "\n");
 		if (!pipex->limiter)
-			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
+			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
 	}
 	if (!pipex->here_doc)
 		pipex->infile = open(av[1], O_RDONLY);
@@ -71,22 +71,15 @@ void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp)
 	else
 		pipex->outfile = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (pipex->outfile == -1 || pipex->outfile == -1)
-		(perror("open"), free_all(pipex, 0), exit(errno));
+		(perror("open"), free_all(pipex), exit(errno));
 	(find_path(pipex), init_pipes(pipex));
 }
 
-void	free_all(t_pipex *pipex, int close_only)
+void	free_all(t_pipex *pipex)
 {
 	size_t	i;
 
 	i = -1;
-	if (close_only)
-	{
-		while (pipex->pipes && pipex->pipes[++i])
-			(close(pipex->pipes[i][0]), close(pipex->pipes[i][1]));
-		(close(pipex->infile), close(pipex->outfile));
-		return ;
-	}
 	if (pipex->limiter)
 		free(pipex->limiter);
 	if (pipex->pipes)
@@ -98,6 +91,8 @@ void	free_all(t_pipex *pipex, int close_only)
 	}
 	if (pipex->path)
 		ft_free_tab(pipex->path);
+	if (pipex->cmd)
+		ft_free_tab(pipex->cmd);
 	(close(pipex->infile), close(pipex->outfile));
 }
 
@@ -110,19 +105,19 @@ int	find_heredoc(t_pipex *pipex)
 	i = 2;
 	file = ft_calloc(i, sizeof(char));
 	if (!file)
-		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
+		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
 	ft_memset(file, 'h', i - 1);
 	while (!access(file, F_OK) && errno != ENOENT)
 	{
 		(free(file), file = ft_calloc(++i, sizeof(char)));
 		if ((i < 0 || !file) && ft_dprintf(2, "%s", ERR_MEM))
-			(free_all(pipex, 0), exit(-1));
+			(free_all(pipex), exit(-1));
 		ft_memset(file, 'h', i - 1);
 	}
 	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	pipex->infile = open(file, O_RDONLY);
 	(unlink(file), free(file));
 	if (pipex->infile == -1 || fd == -1)
-		(perror("open"), close(fd), free_all(pipex, 0), exit(errno));
+		(perror("open"), close(fd), free_all(pipex), exit(errno));
 	return (fd);
 }
