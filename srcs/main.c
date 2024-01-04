@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 19:15:08 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 19:27:25 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,10 +115,10 @@ int	main(int ac, const char **av, char **envp)
 	int		fd;
 
 	if (ac < 5)
-		(ft_dprintf(2, "%s", ERR_ARGS), exit(-1));
+		(ft_dprintf(2, "%s", ERR_ARGS), exit(1));
 	pipex.here_doc = !ft_strncmp(av[1], "here_doc", ft_strlen("here_doc"));
 	if (pipex.here_doc && ac < 6)
-		(ft_dprintf(2, "%s", ERR_BONUS), exit(-1));
+		(ft_dprintf(2, "%s", ERR_BONUS), exit(1));
 	init_pipex(&pipex, ac, av, envp);
 	if (pipex.here_doc)
 	{
