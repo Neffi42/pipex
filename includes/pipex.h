@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:13:26 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/03 19:05:43 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 11:25:36 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,8 @@ typedef struct s_pipex
 	char	*limiter;
 }	t_pipex;
 
-void	close_all(t_pipex *pipex);
-void	free_all(t_pipex *pipex);
+void	free_all(t_pipex *pipex, int close_only);
+int		find_heredoc(t_pipex *pipex);
 void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp);
 
 # define ERR_ARGS "usage: ./pipex <infile> <cmd_1> ... <cmd_n> <outfile>\n"

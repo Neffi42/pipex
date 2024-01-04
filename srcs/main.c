@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/03 19:06:02 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/04 11:28:44 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,25 +38,25 @@ static void	execute(t_pipex *pipex, int *fd)
 	char	*cmd;
 
 	if (!(*pipex->cmd))
-		(ft_dprintf(STDERR_FILENO, "%s: %s", pipex->cmd, ERR_CMD), \
-		free_all(pipex), exit(127));
+		(ft_dprintf(2, "%s: %s", pipex->cmd, ERR_CMD), \
+		free_all(pipex, 0), exit(127));
 	if (dup2(fd[0], STDIN_FILENO) == -1 || dup2(fd[1], STDOUT_FILENO) == -1)
-		(perror("dup2"), free_all(pipex), exit(errno));
-	(close_all(pipex), args = ft_split(pipex->cmd, ' '));
+		(perror("dup2"), free_all(pipex, 0), exit(errno));
+	(free_all(pipex, 1), args = ft_split(pipex->cmd, ' '));
 	if (!args)
-		(ft_dprintf(STDERR_FILENO, "%s", ERR_MEM), free_all(pipex), exit(-1));
+		(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex, 0), exit(-1));
 	cmd = pipex->cmd;
 	if (args[0])
 		cmd = init_cmd(pipex->path, args[0]);
 	if (!cmd)
-		(ft_dprintf(STDERR_FILENO, "%s", ERR_MEM), ft_free_tab(args), \
-		free_all(pipex), exit(-1));
+		(ft_dprintf(2, "%s", ERR_MEM), ft_free_tab(args), \
+		free_all(pipex, 0), exit(-1));
 	execve(cmd, args, pipex->envp);
 	if (cmd == pipex->cmd)
-		ft_dprintf(STDERR_FILENO, "%s: %s", cmd, ERR_CMD);
+		ft_dprintf(2, "%s: %s", cmd, ERR_CMD);
 	else
-		ft_dprintf(STDERR_FILENO, "%s: %s", args[0], ERR_CMD);
-	(free_all(pipex), ft_free_tab(args), exit(127));
+		ft_dprintf(2, "%s: %s", args[0], ERR_CMD);
+	(free_all(pipex, 0), ft_free_tab(args), exit(127));
 }
 
 static pid_t	call_cmds(t_pipex *pipex, char **cmds)
@@ -71,7 +71,7 @@ static pid_t	call_cmds(t_pipex *pipex, char **cmds)
 		pipex->cmd = *(cmds++);
 		pid = fork();
 		if (pid == -1)
-			(perror("fork"), free_all(pipex), exit(errno));
+			(perror("fork"), free_all(pipex, 0), exit(errno));
 		if (!pid)
 		{
 			if (!i)
@@ -85,7 +85,7 @@ static pid_t	call_cmds(t_pipex *pipex, char **cmds)
 			execute(pipex, fd);
 		}
 	}
-	return (free_all(pipex), pid);
+	return (free_all(pipex, 0), pid);
 }
 
 static int	wait_childs(pid_t pid)
@@ -107,30 +107,11 @@ static int	wait_childs(pid_t pid)
 	return (x);
 }
 
-static char	*find_heredoc(t_pipex *pipex)
-{
-	char	*file;
-	int		i;
-
-	i = 2;
-	file = ft_calloc(i, sizeof(char));
-	if (!file)
-		(ft_dprintf(STDERR_FILENO, "%s", ERR_MEM), free_all(pipex), exit(-1));
-	ft_memset(file, 'h', i - 1);
-	while (!access(file, F_OK) && errno != ENOENT)
-	{
-		(free(file), file = ft_calloc(++i, sizeof(char)));
-		if ((i < 0 || !file) && ft_dprintf(STDERR_FILENO, "%s", ERR_MEM))
-			(free_all(pipex), exit(-1));
-		ft_memset(file, 'h', i - 1);
-	}
-	return (file);
-}
-
 int	main(int ac, const char **av, char **envp)
 {
 	t_pipex	pipex;
-	char	*file;
+	char	*line;
+	int		fd;
 
 	if (ac < 5)
 		(ft_dprintf(STDERR_FILENO, "%s", ERR_ARGS), exit(-1));
@@ -140,8 +121,14 @@ int	main(int ac, const char **av, char **envp)
 	init_pipex(&pipex, ac, av, envp);
 	if (pipex.here_doc)
 	{
-		file = find_heredoc(&pipex);
-		free(file);
+		fd = find_heredoc(&pipex);
+		while (ft_printf("here_doc> ") && ft_oget_next_line(0, &line))
+		{
+			if (!ft_strncmp(pipex.limiter, line, ft_strlen(pipex.limiter)))
+				break ;
+			(ft_putstr_fd(line, fd), free(line));
+		}
+		(free(line), close(fd));
 	}
 	return (wait_childs(call_cmds(&pipex, (char **)(av + 2 + pipex.here_doc))));
 }
