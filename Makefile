@@ -1,25 +1,25 @@
-# Program name
+### PROGRAM NAME ###
 NAME = pipex
 
-# Colors
-DEFAULT    = \033[0m
-BLACK    = \033[0;30m
-RED        = \033[0;31m
-GREEN    = \033[0;32m
-YELLOW    = \033[0;33m
-BLUE    = \033[0;34m
-PURPLE    = \033[0;35m
-CYAN    = \033[0;36m
-BWHITE    = \033[1;37m
+### COLORS ###
+DEFAULT    	:= \033[0m
+BLACK    	:= \033[0;30m
+RED        	:= \033[0;31m
+GREEN    	:= \033[0;32m
+YELLOW    	:= \033[0;33m
+BLUE    	:= \033[0;34m
+PURPLE    	:= \033[0;35m
+CYAN    	:= \033[0;36m
+BWHITE    	:= \033[1;37m
 
-# Directories
-LIBS_DIR = libs
-SRCS_DIR = srcs
-INCS_DIR = includes
-OBJS_DIR = objs
-LIBFT_DIR = $(LIBS_DIR)/libft
+### DIRECTORIES ###
+LIBS_DIR	:= libs
+SRC_DIR		:= srcs
+INCLD_DIR	:= includes
+OBJS_DIR	:= objs
+LIBFT_DIR	:= $(LIBS_DIR)/libft
 
-# Files
+### FILES ###
 LIBFT = $(LIBFT_DIR)/libft.a
 
 define LIB :=
@@ -28,24 +28,24 @@ endef
 LIB := $(strip $(LIB))
 
 define INCLUDES :=
-	$(INCS_DIR)
+	$(INCLD_DIR)
 	$(LIBFT_DIR)/includes
 endef
 INCLUDES := $(strip $(INCLUDES))
 
-define SRCS :=
+define SRC :=
 	main.c
 	utils.c
 endef
-SRCS := $(strip $(SRCS))
+SRC := $(strip $(SRC))
 
-OBJS := $(patsubst %.c,$(OBJS_DIR)/%.o,$(SRCS))
+OBJS := $(patsubst %.c,$(OBJS_DIR)/%.o,$(SRC))
 
 # Utils
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -g3
 RM = rm -rf
-INCLUDE_FLAGS := $(addprefix -I , $(INCLUDES))
+INCLD_DIR := $(addprefix -I , $(INCLUDES))
 LIB_FLAGS = --no-print-directory --silent
 
 # Rules
@@ -56,10 +56,10 @@ $(NAME): $(LIBFT) $(OBJS)
 	@echo "$(GREEN)* Assembling $(BWHITE)$@$(DEFAULT)"
 	@$(CC) $(CFLAGS) $(OBJS) $(LIB) -o $@
 
-$(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c
+$(OBJS_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "$(CYAN)- Compiling$(DEFAULT) $<"
 	@mkdir -p $(OBJS_DIR)
-	@$(CC) $(CFLAGS) $(INCLUDE_FLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCLD_DIR) -c $< -o $@
 
 .PHONY: clean
 clean:
@@ -95,9 +95,11 @@ fcleanlib:
 .PHONY: relib
 relib: fcleanlib $(LIBFT)
 
+### NORM ###
 .PHONY: norm
 norm:
 	@echo "$(YELLOW)$(WD) ./$(LIBFT_DIR)$(DEFAULT)"
 	@make -C $(LIBFT_DIR) norm $(LIB_FLAGS)
 	@echo "$(YELLOW)$(WD) ./$(DEFAULT)"
-	@norminette $(SRCS_DIR) $(INCS_DIR) | awk '/'Error'/ {print; found=1} END {if (!found) print "$(PURPLE)Norm OK$(DEFAULT)"}'
+	@norminette $(SRC_DIR) $(INCLUDES) | awk '/Error/ {print; found=1} END \
+	{if (!found) {print "$(PURPLE)Norm OK$(DEFAULT)"; exit 0 }; exit 1 }'
