@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/01 23:45:08 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 19:01:25 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/06 00:22:12 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ void	init_pipex(t_pipex *pipex, int ac, const char **av, char **envp)
 		pipex->outfile = open(av[ac - 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
 	else
 		pipex->outfile = open(av[ac - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (pipex->outfile == -1 || pipex->outfile == -1)
+	if (pipex->infile == -1 || pipex->outfile == -1)
 		(perror("open"), free_all(pipex), exit(errno));
 	(find_path(pipex), init_pipes(pipex));
 }
