@@ -41,14 +41,14 @@ SRC := $(strip $(SRC))
 
 OBJS := $(patsubst %.c,$(OBJS_DIR)/%.o,$(SRC))
 
-# Utils
+### UTILS ###
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -g3
 RM = rm -rf
 INCLD_DIR := $(addprefix -I , $(INCLUDES))
 LIB_FLAGS = --no-print-directory --silent
 
-# Rules
+### PROJECT ###
 .PHONY: all
 all: $(NAME)
 
@@ -74,6 +74,10 @@ fclean: clean
 .PHONY: re
 re: fclean all
 
+.PHONY: bonus
+bonus: re
+
+### LIBFT ###
 $(LIBFT):
 	@echo "$(YELLOW)$(WD) ./$(LIBFT_DIR)$(DEFAULT)"
 	@git submodule update
