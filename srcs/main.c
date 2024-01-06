@@ -6,7 +6,7 @@
 /*   By: abasdere <abasdere@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/19 15:10:58 by abasdere          #+#    #+#             */
-/*   Updated: 2024/01/04 19:27:25 by abasdere         ###   ########.fr       */
+/*   Updated: 2024/01/06 13:39:28 by abasdere         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,16 +28,16 @@ static void	execute(t_pipex *pipex, int index, pid_t *pid)
 		fd[1] = pipex->pipes[index][1];
 	*pid = fork();
 	if (*pid == -1)
-		(perror("fork"), free_all(pipex), exit(-1));
+		(perror("fork"), free_all(pipex), exit(1));
 	if (!(*pid))
 	{
 		if (dup2(fd[0], STDIN_FILENO) == -1 || dup2(fd[1], STDOUT_FILENO) == -1)
-			(perror("dup2"), free_all(pipex), exit(-1));
+			(perror("dup2"), free_all(pipex), exit(1));
 		while (pipex->pipes[++i])
 			(close(pipex->pipes[i][0]), close(pipex->pipes[i][1]));
 		(close(pipex->infile), close(pipex->outfile));
 		execve(pipex->cmd[0], pipex->cmd, pipex->envp);
-		(perror("execve"), free_all(pipex), exit(-1));
+		(perror("execve"), free_all(pipex), exit(1));
 	}
 }
 
@@ -85,7 +85,7 @@ static pid_t	call_cmds(t_pipex *pipex, char **av)
 		}
 		code = init_cmd(pipex);
 		if (code == -1)
-			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(-1));
+			(ft_dprintf(2, "%s", ERR_MEM), free_all(pipex), exit(1));
 		else if (code == 127)
 			(ft_dprintf(2, "%s: %s", pipex->cmd[0], ERR_CMD), pid = -1);
 		else
